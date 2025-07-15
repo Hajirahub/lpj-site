@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), sans-serif;
+}
+.font-work {
+  font-family: var(--font-work-sans), sans-serif;
+}
+
+.font-dm-serif {
+  font-family: var(--font-dm-serif), serif;
+}
+
+.font-lobster {
+  font-family: var(--font-lobster), cursive;
+}
+html {
+  scroll-behavior: smooth;
+}
+.button-wrap {
+  position: relative;
+  display: inline-block;
+  padding: 1rem;
+}
+
+.glass-button {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  padding: 1rem 2.5rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #000;
+  font-size: 1.5rem;
+  font-weight: 500;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.glass-button:hover {
+  transform: scale(1.05);
+}
+
+.button-shadow {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.1);
+  filter: blur(10px);
+  z-index: 0;
+}
