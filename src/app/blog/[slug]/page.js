@@ -3,6 +3,7 @@
 import { articles } from "../articlesData";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { FaLinkedin, FaFacebookF, FaTwitter } from "react-icons/fa";
 
 export default function ArticlePage({ params }) {
   const article = articles.find((a) => a.slug === params.slug);
@@ -25,12 +26,31 @@ export default function ArticlePage({ params }) {
         {/* 🗓️ Date + Partage */}
         <div className="flex justify-between items-center text-sm text-gray-500 mb-8">
           <p>{article.date} • {article.readingTime}</p>
-          <div className="flex space-x-4">
-            <a href="#" className="hover:text-[#5A9EEF]">📘</a>
-            <a href="#" className="hover:text-[#5A9EEF]">🐦</a>
-            <a href="#" className="hover:text-[#5A9EEF]">🔗</a>
-            <a href="#" className="hover:text-[#5A9EEF]">📱</a>
-            <a href="#" className="hover:text-[#5A9EEF]">✉️</a>
+          <div className="flex gap-4 text-lg">
+            <a
+              href="https://linkedin.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#5A9EEF] transition-colors"
+            >
+              <FaLinkedin />
+            </a>
+            <a
+              href="https://facebook.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#5A9EEF] transition-colors"
+            >
+              <FaFacebookF />
+            </a>
+            <a
+              href="https://twitter.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#5A9EEF] transition-colors"
+            >
+              <FaTwitter />
+            </a>
           </div>
         </div>
 

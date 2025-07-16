@@ -1,14 +1,164 @@
 'use client';
 //contact+call to action
 
-import React from 'react';
+import React, { useState } from 'react';
 import Lottie from 'lottie-react';
+import { LuPlus, LuX } from 'react-icons/lu';
 
 // ✅ L'import se fait ici
 const animationData = require('../lotties/animationCall.json');
 
-export default function ContactSection() {
+const faqs = [
+  {
+    q: 'Quels types de formalités proposez-vous ?',
+    a:
+      "Nous vous accompagnons dans toutes les étapes clés de la vie d’une entreprise : création, modification des statuts, transfert de siège, fermeture, et publications d’annonces légales.",
+  },
+  {
+    q: 'Est-ce que vous rédigez les statuts ?',
+    a:
+      'Oui, nous rédigeons des statuts personnalisés adaptés à votre activité, votre régime fiscal et vos objectifs. Nous pouvons aussi corriger ou relire des statuts existants.',
+  },
+  {
+    q: 'En combien de temps ma société peut-elle être créée ?',
+    a:
+      'En général sous 48 à 72 heures après réception et validation de tous les documents nécessaires.',
+  },
+  {
+    q: 'Travaillez-vous avec des micro-entrepreneurs ?',
+    a:
+      'Oui, nous accompagnons les micro-entrepreneurs dans leurs démarches : immatriculation, modification d’activité, passage en société, etc.',
+  },
+  {
+    q: 'Vos services remplacent-ils un avocat ou un expert-comptable ?',
+    a:
+      'Non. Nous travaillons en complément : nous ne donnons pas de conseils juridiques ou fiscaux, mais nous facilitons toutes les démarches administratives.',
+  },
+  {
+    q: 'Que proposez-vous en stratégie digitale ?',
+    a:
+      'Nous vous aidons à optimiser votre présence en ligne : fiche Google, SEO local, création de site, gestion des avis clients et image de marque.',
+  },
+  {
+    q: 'Est-ce que vous créez des sites web ?',
+    a:
+      'Oui. Nous proposons des sites vitrines rapides, élégants et adaptés aux indépendants et petites entreprises.',
+  },
+  {
+    q: 'Je ne suis pas à l’aise avec le digital, est-ce un problème ?',
+    a:
+      'Pas du tout. Notre mission est de rendre les choses simples, compréhensibles et accessibles pour tout le monde.',
+  },
+  {
+    q: 'Le premier rendez-vous est-il gratuit ?',
+    a:
+      'Oui. Le premier échange est offert et sans engagement, pour comprendre vos besoins et vous proposer une solution sur mesure.',
+  },
+];
+
+function FAQ() {
+  const [open, setOpen] = useState<number | null>(null);
+
+  const toggle = (index: number) => {
+    setOpen(open === index ? null : index);
+  };
+
   return (
+    <div className="space-y-4">
+      {faqs.map((item, index) => (
+        <div
+          key={index}
+          className="bg-white rounded-3xl shadow-md transition-colors"
+        >
+          <button
+            onClick={() => toggle(index)}
+            className="w-full flex items-center justify-between p-4 text-left"
+          >
+            <span className="font-semibold text-[#0f2c4f]">{item.q}</span>
+            {open === index ? (
+              <LuX className="w-5 h-5" />
+            ) : (
+              <LuPlus className="w-5 h-5" />
+            )}
+          </button>
+          <div
+            className={`px-4 pb-4 transition-all duration-300 ease-in-out overflow-hidden ${
+              open === index ? 'max-h-[300px] opacity-100' : 'max-h-0 opacity-0'
+            }`}
+          >
+            <p className="text-gray-700">{item.a}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+
+export default function ContactSection() {
+  const [form, setForm] = useState({
+    nom: '',
+    prenom: '',
+    email: '',
+    objet: '',
+    message: '',
+    website: '', // honeypot
+  });
+  const [errors, setErrors] = useState({ nom: '', email: '', message: '' });
+  const [status, setStatus] = useState('');
+
+  const sanitizeInput = (value: string) =>
+    value.replace(/</g, '').replace(/>/g, '');
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const validate = () => {
+    const newErrors = { nom: '', email: '', message: '' };
+    const hasDangerous = (value: string) => /[<>]/.test(value);
+
+    if (!form.nom.trim()) newErrors.nom = 'Champ obligatoire';
+    if (hasDangerous(form.nom)) newErrors.nom = 'Caractères invalides';
+
+    if (!form.email.trim()) newErrors.email = 'Champ obligatoire';
+    if (form.email && !/^[^<>@\s]+@[^<>@\s]+\.[^<>@\s]+$/.test(form.email)) {
+      newErrors.email = 'Adresse invalide';
+    }
+        if (hasDangerous(form.email)) newErrors.email = 'Caractères invalides';
+
+    if (!form.message.trim()) newErrors.message = 'Champ obligatoire';
+        if (hasDangerous(form.message)) newErrors.message = 'Caractères invalides';
+    return newErrors;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (form.website) return; // honeypot
+    const newErrors = validate();
+    if (newErrors.nom || newErrors.email || newErrors.message) {
+      setErrors(newErrors);
+      setStatus('');
+      return;
+    }
+    setErrors({ nom: '', email: '', message: '' });
+
+    const payload = {
+      nom: sanitizeInput(form.nom),
+      prenom: sanitizeInput(form.prenom),
+      email: sanitizeInput(form.email),
+      objet: sanitizeInput(form.objet),
+      message: sanitizeInput(form.message),
+      'g-recaptcha-response': '',
+    };
+    console.log(payload); // placeholder for server call
+    setStatus('Message envoyé !');
+    setForm({ nom: '', prenom: '', email: '', objet: '', message: '', website: '' });
+  };
+    return (
     <section className="bg-[url('/background.png')] py-20 px-4">
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
         {/* 👉 Colonne gauche - Infos */}
@@ -46,66 +196,161 @@ export default function ContactSection() {
         </div>
 
         {/* ✍️ Colonne droite - Formulaire */}
-<form className="bg-[#F1F3F5] rounded-2xl p-6 shadow-md space-y-6">
-  {/* 🌿 Ligne : Nom + Prénom */}
-  <div className="grid md:grid-cols-2 gap-6">
-    <div className="flex flex-col">
-      <label className="text-sm text-gray-600 mb-1">Nom</label>
-      <input
-        type="text"
-        placeholder="Entrez votre nom"
-        className="bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#F58700] transition-colors duration-200 text-sm py-2 placeholder-gray-400"
-      />
-    </div>
-    <div className="flex flex-col">
-      <label className="text-sm text-gray-600 mb-1">Prénom</label>
-      <input
-        type="text"
-        placeholder="Entrez votre prénom"
-        className="bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#F58700] transition-colors duration-200 text-sm py-2 placeholder-gray-400"
-      />
-    </div>
+        <form
+          onSubmit={handleSubmit}
+          className="bg-[#F1F3F5] rounded-2xl p-6 shadow-md space-y-6"
+        >
+          {/* 🌿 Ligne : Nom + Prénom */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="flex flex-col">
+              <label className="text-sm text-gray-600 mb-1" htmlFor="nom">
+                Nom
+              </label>
+              <input
+                id="nom"
+                name="nom"
+                value={form.nom}
+                onChange={handleChange}
+                required
+                minLength={2}
+                pattern="^[^<>]*$"
+                placeholder="Entrez votre nom"
+                className="bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#F58700] transition-colors duration-200 text-sm py-2 placeholder-gray-400"
+              />
+              {errors.nom && (
+                <p className="text-red-500 text-xs mt-1">{errors.nom}</p>
+              )}
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm text-gray-600 mb-1" htmlFor="prenom">
+                Prénom
+              </label>
+              <input
+                id="prenom"
+                name="prenom"
+                value={form.prenom}
+                onChange={handleChange}
+                minLength={2}
+                pattern="^[^<>]*$"
+                placeholder="Entrez votre prénom"
+                className="bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#F58700] transition-colors duration-200 text-sm py-2 placeholder-gray-400"
+              />
+            </div>
+          </div>
+
+          {/* ✉️ Email */}
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 mb-1" htmlFor="email">
+              Adresse e-mail
+            </label>
+            <input
+              id="email"
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              required
+              pattern="^[^<>]*$"
+              placeholder="vous@example.com"
+              className="bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#F58700] transition-colors duration-200 text-sm py-2 placeholder-gray-400"
+            />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            )}
+          </div>
+
+          {/* 🧾 Objet */}
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 mb-1" htmlFor="objet">
+              Objet
+            </label>
+            <input
+              id="objet"
+              name="objet"
+              value={form.objet}
+              onChange={handleChange}
+              minLength={2}
+              pattern="^[^<>]*$"
+              placeholder="Ex. : demande de RDV"
+              className="bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#F58700] transition-colors duration-200 text-sm py-2 placeholder-gray-400"
+            />
+          </div>
+
+          {/* 📝 Message */}
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-600 mb-1" htmlFor="message">
+              Message
+            </label>
+            <textarea
+              id="message"
+              name="message"
+              value={form.message}
+              onChange={handleChange}
+              required
+              minLength={10}
+              placeholder="Tapez votre message ici..."
+              rows={4}
+              className="bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#F58700] transition-colors duration-200 text-sm py-2 placeholder-gray-400 resize-none"
+            ></textarea>
+            {errors.message && (
+              <p className="text-red-500 text-xs mt-1">{errors.message}</p>
+            )}
+          </div>
+
+          {/* Honeypot */}
+          <div style={{ display: 'none' }}>
+            <label htmlFor="website">Site web</label>
+            <input
+              id="website"
+              name="website"
+              value={form.website}
+              onChange={handleChange}
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
+
+          {/* reCAPTCHA placeholder */}
+          <div className="g-recaptcha" data-sitekey="your_site_key"></div>
+
+          {/* 📩 Bouton */}
+          <div className="pt-4">
+            <button
+              type="submit"
+              className="bg-[#F58700] hover:bg-[#d67200] text-white font-medium text-sm font-worksans py-2 px-6 rounded-full transition duration-200"
+            >
+              Envoyer le message →
+            </button>
+            {status && (
+              <p className="text-green-600 text-sm mt-2 text-center">{status}</p>
+            )}
+          </div>
+        </form>
+
+
+
+        </div>
+
+        {/* FAQ Section */}
+        <section className="w-full py-16 px-4">
+          <div className="max-w-3xl mx-auto">
+            <p className="text-center uppercase text-sm text-gray-500 font-semibold mb-2">
+              DES QUESTIONS ?
+            </p>
+            <h2 className="text-center text-3xl md:text-4xl font-dm-serif text-[#1a1a1a] mb-8">
+              Questions fréquemment posées
+            </h2>
+            <FAQ />
+          </div>
+        </section>
+  <div className="w-full text-center mt-16">
+    <p className="text-[#0f2c4f] text-sm md:text-base font-medium opacity-70 mb-1">
+      Planifier votre appel découverte gratuit !
+    </p>
+    <div className="text-[#0f2c4f] text-2xl animate-bounce">↓</div>
   </div>
 
-  {/* 🧾 Objet */}
-  <div className="flex flex-col">
-    <label className="text-sm text-gray-600 mb-1">Objet</label>
-    <input
-      type="text"
-      placeholder="Ex. : demande de RDV"
-      className="bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#F58700] transition-colors duration-200 text-sm py-2 placeholder-gray-400"
-    />
-  </div>
-
-  {/* 📝 Message */}
-  <div className="flex flex-col">
-    <label className="text-sm text-gray-600 mb-1">Message</label>
-    <textarea
-      placeholder="Tapez votre message ici..."
-      rows={4}
-      className="bg-transparent border-b border-gray-300 focus:outline-none focus:border-[#F58700] transition-colors duration-200 text-sm py-2 placeholder-gray-400 resize-none"
-    ></textarea>
-  </div>
-
-  {/* 📩 Bouton */}
-  <div className="pt-4">
-    <button
-      type="submit"
-      className="bg-[#F58700] hover:bg-[#d67200] text-white font-medium text-sm font-worksans py-2 px-6 rounded-full transition duration-200"
-    >
-      Envoyer le message →
-    </button>
-  </div>
-</form>
-
-      </div>
-
-<div className="w-full text-center mt-16">
-  <p className="text-[#0f2c4f] text-sm md:text-base font-medium opacity-70 mb-1">
-    Planifier votre appel découverte gratuit !
-  </p>
-  <div className="text-[#0f2c4f] text-2xl animate-bounce">↓</div>
-</div>
+    {/* Call to action section */}
 
     <section className="py-16 px-4">
       <div className="max-w-5xl mx-auto bg-[#193760] text-white p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg">
@@ -113,7 +358,6 @@ export default function ContactSection() {
         <div className="w-40 h-40">
           <Lottie animationData={animationData} loop={true} />
         </div>
-
         {/* Texte + bouton */}
         <div className="flex-1">
           <h2 className="text-2xl md:text-3xl font-semibold font-dm-serif mb-2">
