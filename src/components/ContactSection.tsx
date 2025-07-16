@@ -1,7 +1,13 @@
 'use client';
 //contact+call to action
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+
+declare global {
+  interface Window {
+    grecaptcha: any;
+  }
+}
 import Lottie from 'lottie-react';
 import { LuPlus, LuX } from 'react-icons/lu';
 
@@ -107,6 +113,53 @@ export default function ContactSection() {
   const [errors, setErrors] = useState({ nom: '', email: '', message: '' });
   const [status, setStatus] = useState('');
 
+  const [captchaToken, setCaptchaToken] = useState('');
+  const recaptchaRef = useRef<HTMLDivElement | null>(null);
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
+
+  useEffect(() => {
+    const scriptId = 'recaptcha-script';
+
+    const renderCaptcha = () => {
+      if (
+        window.grecaptcha &&
+        typeof window.grecaptcha.render === 'function' &&
+        recaptchaRef.current
+      ) {
+        if (!siteKey) {
+          console.warn('reCAPTCHA site key is missing');
+          return;
+        }
+        window.grecaptcha.render(recaptchaRef.current, {
+          siteKey,
+            callback: (token: string) => setCaptchaToken(token),
+          'expired-callback': () => setCaptchaToken(''),
+        });
+      }
+    };
+    if (document && !document.getElementById(scriptId)) {
+      const script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://www.google.com/recaptcha/api.js?render=explicit';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        if (window.grecaptcha && typeof window.grecaptcha.ready === 'function') {
+          window.grecaptcha.ready(renderCaptcha);
+        } else {
+          renderCaptcha();
+        }
+      };
+      document.body.appendChild(script);
+    } else if (window.grecaptcha) {
+      if (typeof window.grecaptcha.ready === 'function') {
+        window.grecaptcha.ready(renderCaptcha);
+      } else {
+        renderCaptcha();
+      }
+    }
+  }, []);
+
   const sanitizeInput = (value: string) =>
     value.replace(/</g, '').replace(/>/g, '');
 
@@ -144,6 +197,11 @@ export default function ContactSection() {
       setStatus('');
       return;
     }
+    if (!captchaToken) {
+      setStatus('Veuillez valider le captcha');
+      return;
+    }
+
     setErrors({ nom: '', email: '', message: '' });
 
     const payload = {
@@ -152,11 +210,14 @@ export default function ContactSection() {
       email: sanitizeInput(form.email),
       objet: sanitizeInput(form.objet),
       message: sanitizeInput(form.message),
-      'g-recaptcha-response': '',
-    };
+      'g-recaptcha-response': captchaToken,    };
     console.log(payload); // placeholder for server call
     setStatus('Message envoyé !');
     setForm({ nom: '', prenom: '', email: '', objet: '', message: '', website: '' });
+    setCaptchaToken('');
+    if (window.grecaptcha && recaptchaRef.current) {
+      window.grecaptcha.reset();
+    }    
   };
     return (
     <section className="bg-[url('/background.png')] py-20 px-4">
@@ -310,8 +371,8 @@ export default function ContactSection() {
             />
           </div>
 
-          {/* reCAPTCHA placeholder */}
-          <div className="g-recaptcha" data-sitekey="your_site_key"></div>
+          {/* reCAPTCHA */}
+          <div ref={recaptchaRef} className="g-recaptcha"></div>
 
           {/* 📩 Bouton */}
           <div className="pt-4">
