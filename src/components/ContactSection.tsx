@@ -131,8 +131,8 @@ export default function ContactSection() {
           return;
         }
         window.grecaptcha.render(recaptchaRef.current, {
-          siteKey,
-            callback: (token: string) => setCaptchaToken(token),
+          sitekey: siteKey,
+          callback: (token: string) => setCaptchaToken(token),
           'expired-callback': () => setCaptchaToken(''),
         });
       }
